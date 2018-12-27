@@ -1,78 +1,97 @@
 # Import necessary modules
-from rasa_nlu.training_data import load_data
-from rasa_nlu.config import RasaNLUModelConfig
-from rasa_nlu.model import Trainer
-from rasa_nlu import config
-
-# Create a trainer that uses this config
-trainer = Trainer(config.load("./config/config_spacy.yml"))
-
-# Load the training data
-training_data = load_data('./config/rasa.json')
-
-# Create an interpreter by training the model
-interpreter = trainer.train(training_data)
-
-print('=-=-=-=-=-=-=-=-=-=')
-print('Model Training Done')
-print('=-=-=-=-=-=-=-=-=-=')
-
-# Define the states
+from rasa_nlu.model import Interpreter
 from constants import *
+
+# interpreter = Interpreter.load(MODEL_PATH)
+# interpreter = rasa_nlu.model.Interpreter.load(MODEL_PATH)
+from train import interpreter
+
+print('=-=-=-=-=-=-=')
+print('Model Loaded')
+print('=-=-=-=-=-=-=')
 
 # Define the policy rules dictionary
 policy_rules = {
     (INIT, "greet"): (INIT, "I'm a bot to remind you"),
-    (INIT, "create_start"): (CREATE_START, "Ok, start now. please provide a brief description"),
-    # (CREATE_START, 'create_description'): (CREATE_DESCRIPTION, "perfect, the beans are on their way!"),
-    # (CREATE_DESCRIPTION, "create_details"): (CREATE_DETAIL,
-    #                                          "We have two kinds of coffee beans - the Kenyan ones make a slightly sweeter coffee, and cost $6. The Brazilian beans make a nutty coffee and cost $5.")
+    (INIT, "create_start"): (CREATE_DESCRIPTION, "Ok, start now. please provide a brief description"),
+    (CREATE_DESCRIPTION, None): (CREATE_DETAIL, "Please provide more details"),
+    (CREATE_DETAIL, None): (CREATE_CONFIRM, "Double check if everything is correct"),
+    (CREATE_CONFIRM, 'affirm'): (INIT, 'Done'),
 }
+
+debug = True
+
+
+def say(role, msg, prefix=''):
+    print(f"{prefix} {role}: {msg}")
+
+
+def bot_say(msg):
+    say('BOT', msg, ">>")
+
+
+def user_say(msg):
+    say('USER', msg, ">")
+
+
+def take_action(action, msg, state, intent):
+    if debug is True:
+        print('action', action, state, intent)
+
+    if state == CREATE_START:
+        action['type'] = CREATE_ACTION
+    elif state == CREATE_DESCRIPTION:
+        action['description'] = msg
+    elif state == CREATE_DETAIL:
+        action['detail'] = msg
+    elif state == CREATE_CONFIRM and intent == 'affirm':
+        print('save', action)
+
+    return action
+
+
+# Define send_message()
+def send_message(state, action, message):
+    user_say(message)
+
+    intent = interpreter.parse(message)['intent']['name']
+
+    if intent == 'quit':
+        return INIT, {}
+
+    if state == CREATE_DESCRIPTION or state == CREATE_DETAIL:
+        intent = None
+
+    pair = (state, intent)
+
+    if pair not in policy_rules:
+        bot_say("Sorry I don't know what to do")
+        return state, action
+
+    next_state, response = policy_rules[pair]
+    action = take_action(action, message, state, intent)
+
+    if debug is True:
+        print(f"state: {state}, intent: {intent}, next_state: {next_state}")
+
+    bot_say(response)
+    return next_state, action
 
 
 # Define send_messages()
 def send_messages(messages):
     state = INIT
+    action = {}
+
     for msg in messages:
-        state = send_message(state, msg)
-
-
-def interpret(message):
-    msg = message.lower()
-    if 'order' in msg:
-        return 'order'
-    elif 'yes' in msg:
-        return 'affirm'
-    elif 'no' in msg:
-        return 'deny'
-    return 'none'
-
-
-# Define policy()
-def policy(intent):
-    # Return "do_pending" if the intent is "affirm"
-    if intent == "affirm":
-        return "do_pending", None
-    # Return "Ok" if the intent is "deny"
-    if intent == "deny":
-        return "OK", None
-    if intent == "order":
-        return "Unfortunately, the Kenyan coffee is currently out of stock, would you like to order the Brazilian beans?", "Alright, I've ordered that for you!"
-
-
-def send_message(message, pending):
-    print(f"USER : {message}")
-    answer, pending_action = policy(interpret(message))
-    if answer == "do_pending" and pending is not None:
-        print("BOT : {}".format(pending))
-    else:
-        print("BOT : {}".format(answer))
-    return pending_action
+        state, action = send_message(state, action, msg)
 
 
 # Send the messages
 send_messages([
-    "what can you do for me?",
-    "make a new reminder",
-    "Finish midterm project before wednesday",
+    "Hi",
+    "Create new reminder",
+    "This is a description",
+    "here are the details",
+    'yes',
 ])

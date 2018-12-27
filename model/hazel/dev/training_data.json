@@ -1,0 +1,151 @@
+{
+  "rasa_nlu_data": {
+    "common_examples": [
+      {
+        "intent": "greet",
+        "text": "hey"
+      },
+      {
+        "intent": "greet",
+        "text": "howdy"
+      },
+      {
+        "intent": "greet",
+        "text": "hey there"
+      },
+      {
+        "intent": "greet",
+        "text": "hello"
+      },
+      {
+        "intent": "greet",
+        "text": "hi"
+      },
+      {
+        "intent": "greet",
+        "text": "good morning"
+      },
+      {
+        "intent": "greet",
+        "text": "good evening"
+      },
+      {
+        "intent": "greet",
+        "text": "dear sir"
+      },
+      {
+        "intent": "affirm",
+        "text": "yes"
+      },
+      {
+        "intent": "affirm",
+        "text": "yep"
+      },
+      {
+        "intent": "affirm",
+        "text": "yeah"
+      },
+      {
+        "intent": "affirm",
+        "text": "indeed"
+      },
+      {
+        "intent": "affirm",
+        "text": "that's right"
+      },
+      {
+        "intent": "affirm",
+        "text": "ok"
+      },
+      {
+        "intent": "affirm",
+        "text": "great"
+      },
+      {
+        "intent": "affirm",
+        "text": "right, thank you"
+      },
+      {
+        "intent": "affirm",
+        "text": "correct"
+      },
+      {
+        "intent": "affirm",
+        "text": "great choice"
+      },
+      {
+        "intent": "affirm",
+        "text": "sounds really good"
+      },
+      {
+        "intent": "quit",
+        "text": "bye"
+      },
+      {
+        "intent": "quit",
+        "text": "quit"
+      },
+      {
+        "intent": "quit",
+        "text": "stop"
+      },
+      {
+        "intent": "quit",
+        "text": "exit"
+      },
+      {
+        "intent": "create_start",
+        "text": "create a task"
+      },
+      {
+        "intent": "create_start",
+        "text": "new task"
+      },
+      {
+        "intent": "create_start",
+        "text": "make a note for me"
+      },
+      {
+        "intent": "create_start",
+        "text": "remind me"
+      }
+    ],
+    "regex_features": [
+      {
+        "name": "greet",
+        "pattern": "(hey|hello|hi)[^\\s]*"
+      }
+    ],
+    "lookup_tables": [],
+    "entity_synonyms": [
+      {
+        "value": "chinese",
+        "synonyms": [
+          "Chinese",
+          "Chines",
+          "chines"
+        ]
+      },
+      {
+        "value": "vegetarian",
+        "synonyms": [
+          "veggie",
+          "vegg"
+        ]
+      },
+      {
+        "value": "hi",
+        "synonyms": [
+          "expensive",
+          "valued"
+        ]
+      },
+      {
+        "value": "lo",
+        "synonyms": [
+          "cheap"
+        ]
+      }
+    ]
+  }
+}

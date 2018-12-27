@@ -133,6 +133,26 @@
         "entities": []
       },
       {
+        "text": "bye",
+        "intent": "quit",
+        "entities": []
+      },
+      {
+        "text": "quit",
+        "intent": "quit",
+        "entities": []
+      },
+      {
+        "text": "stop",
+        "intent": "quit",
+        "entities": []
+      },
+      {
+        "text": "exit",
+        "intent": "quit",
+        "entities": []
+      },
+      {
         "text": "create a task",
         "intent": "create_start",
         "entities": []
