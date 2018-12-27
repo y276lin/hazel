@@ -1,9 +1,9 @@
-# Import necessary modules
-from rasa_nlu.model import Interpreter
 from constants import *
-
+# use existing model
+# from rasa_nlu.model import Interpreter
 # interpreter = Interpreter.load(MODEL_PATH)
-# interpreter = rasa_nlu.model.Interpreter.load(MODEL_PATH)
+
+# train new model
 from train import interpreter
 
 print('=-=-=-=-=-=-=')
@@ -22,16 +22,21 @@ policy_rules = {
 debug = True
 
 
-def say(role, msg, prefix=''):
-    print(f"{prefix} {role}: {msg}")
+def say(role, msg, prefix='', color=None):
+    msg = f"{prefix} {role}: {msg}"
+
+    if color is not None:
+        msg = color + msg + bcolors.ENDC
+
+    print(msg)
 
 
 def bot_say(msg):
-    say('BOT', msg, ">>")
+    say('BOT', msg, prefix=">>", color=bcolors.FAIL)
 
 
 def user_say(msg):
-    say('USER', msg, ">")
+    say('USER', msg, prefix=">", color=bcolors.OKGREEN)
 
 
 def take_action(action, msg, state, intent):
