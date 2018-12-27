@@ -1,0 +1,5 @@
+INIT = 'init'
+CREATE_START = 'create_start'
+CREATE_DESCRIPTION = 'create_description'
+CREATE_DETAIL = 'create_detail'
+CREATE_CONFIRM = 'create_confirm'
