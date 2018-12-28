@@ -27,12 +27,20 @@ class DB:
             '''INSERT INTO tasks (description, detail) VALUES ('finish proj on wednesday', 'just do it')''')
         self.commit()
 
-    def get(self):
+    def read(self):
         cursor = self.cursor.execute('''SELECT * FROM tasks''')
         res = cursor.fetchall()
 
-        for row in res:
-            print(row)
+        tasks = [{
+            "id": row[0],
+            "description": row[1],
+            "detail": row[2],
+            "locations": row[3],
+            "times": row[4],
+            "people": row[5],
+        } for row in res]
+
+        return tasks
 
     def create(self, action):
         self.cursor.execute(
@@ -48,4 +56,7 @@ db = DB()
 if 'reset' in sys.argv:
     db.reset()
     db.seed()
-    db.get()
+    db.read()
+
+if 'temp' in sys.argv:
+    db.read()

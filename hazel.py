@@ -6,6 +6,7 @@ from constants import *
 # train new model
 from train import interpreter, extract_entities
 from db import db
+import re
 
 print('=-=-=-=-=-=-=')
 print('Model Loaded')
@@ -18,6 +19,8 @@ policy_rules = {
     (CREATE_DESCRIPTION, None): (CREATE_DETAIL, "Please provide more details"),
     (CREATE_DETAIL, None): (CREATE_CONFIRM, "Double check if everything is correct"),
     (CREATE_CONFIRM, 'affirm'): (INIT, 'Done'),
+    (INIT, 'read_all'): (INIT, None),
+    (INIT, 'read_more'): (INIT, None),
 }
 
 debug = True
@@ -33,11 +36,13 @@ def say(role, msg, prefix='', color=None):
 
 
 def bot_say(msg):
-    say('BOT', msg, prefix=">>", color=bcolors.FAIL)
+    if msg is not None:
+        say('BOT', msg, prefix=">>", color=bcolors.FAIL)
 
 
 def user_say(msg):
-    say('USER', msg, prefix=">", color=bcolors.OKGREEN)
+    if msg is not None:
+        say('USER', msg, prefix=">", color=bcolors.OKGREEN)
 
 
 def take_action(action, msg, state, intent):
@@ -67,6 +72,24 @@ def take_action(action, msg, state, intent):
         action['people'] = str(ents['PERSON']) if 'PERSON' in ents else None
 
         bot_say(str(action))
+    elif state == INIT and intent == 'read_all':
+        tasks = db.read()
+        res = '\n'
+        for index, task in enumerate(tasks):
+            tasks[index]['index'] = index + 1
+            res += f"{index + 1}: {task['description']}\n"
+
+        bot_say(str(res))
+        action['type'] = READ_ACTION
+        action['tasks'] = tasks
+    elif state == INIT and intent == "read_more":
+        tasks = action['tasks']
+        index = int(re.search(r"[1-9][0-9]*", msg).group(0))
+
+        if action['type'] == READ_ACTION and index <= len(tasks):
+            bot_say(tasks[index - 1])
+        else:
+            bot_say('Invalid Index. Use [list all] to show all tasks')
     elif state == CREATE_CONFIRM and intent == 'affirm':
         print('save', action)
         db.create(action)
@@ -111,12 +134,20 @@ def send_messages(messages):
         state, action = send_message(state, action, msg)
 
 
-# Send the messages
+# create
+# send_messages([
+#     "Hi",
+#     "Create new reminder",
+#     "Dinner on December 13th with David",
+#     # "Dinner tomorrow with David",
+#     "3 pm at the Keg in Mississauga",
+#     'yes',
+# ])
+
+# read
 send_messages([
-    "Hi",
-    "Create new reminder",
-    "Dinner on December 13th with David",
-    # "Dinner tomorrow with David",
-    "3 pm at the Keg in Mississauga",
-    'yes',
+    "show me my notes",
+    "more on 2",
+    "more details on 3",
+    "1",
 ])

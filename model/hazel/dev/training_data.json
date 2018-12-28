@@ -79,10 +79,6 @@
       },
       {
         "intent": "quit",
-        "text": "bye"
-      },
-      {
-        "intent": "quit",
         "text": "quit"
       },
       {
@@ -95,11 +91,11 @@
       },
       {
         "intent": "create_start",
-        "text": "create a task"
+        "text": "create a task\""
       },
       {
         "intent": "create_start",
-        "text": "new task"
+        "text": "new task\""
       },
       {
         "intent": "create_start",
@@ -108,44 +104,54 @@
       {
         "intent": "create_start",
         "text": "remind me"
-      }
-    ],
-    "regex_features": [
+      },
       {
-        "name": "greet",
-        "pattern": "(hey|hello|hi)[^\\s]*"
+        "intent": "read_all",
+        "text": "show me all tasks"
+      },
+      {
+        "intent": "read_all",
+        "text": "show me all notes"
+      },
+      {
+        "intent": "read_all",
+        "text": "show me my notes"
+      },
+      {
+        "intent": "read_all",
+        "text": "give me my reminders"
+      },
+      {
+        "intent": "read_all",
+        "text": "list all notes"
+      },
+      {
+        "intent": "read_more",
+        "entities": [
+          {
+            "start": 16,
+            "end": 17,
+            "value": "1",
+            "entity": "index"
+          }
+        ],
+        "text": "more details on 1"
+      },
+      {
+        "intent": "read_more",
+        "entities": [
+          {
+            "start": 16,
+            "end": 17,
+            "value": "3",
+            "entity": "index"
+          }
+        ],
+        "text": "show me more on 3"
       }
     ],
+    "regex_features": [],
     "lookup_tables": [],
-    "entity_synonyms": [
-      {
-        "value": "chinese",
-        "synonyms": [
-          "Chinese",
-          "Chines",
-          "chines"
-        ]
-      },
-      {
-        "value": "vegetarian",
-        "synonyms": [
-          "veggie",
-          "vegg"
-        ]
-      },
-      {
-        "value": "hi",
-        "synonyms": [
-          "expensive",
-          "valued"
-        ]
-      },
-      {
-        "value": "lo",
-        "synonyms": [
-          "cheap"
-        ]
-      }
-    ]
+    "entity_synonyms": []
   }
 }

@@ -9,7 +9,8 @@ import spacy
 trainer = Trainer(config.load("./config/config_spacy.yml"))
 
 # Load the training data
-training_data = load_data('./config/rasa.json')
+training_data = load_data('./config/rasa.md')
+# training_data = load_data('./config/rasa.json')
 
 # Train Model
 interpreter = trainer.train(training_data)
