@@ -18,11 +18,14 @@ class DB:
 
     def seed(self):
         self.cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY, description string, detail string)''')
+            '''
+            CREATE TABLE IF NOT EXISTS tasks 
+            (id INTEGER PRIMARY KEY, description string, detail string, locations string, times string, people string)
+            ''')
         self.cursor.execute('''INSERT INTO tasks (description, detail) VALUES ('this is description', 'more...')''')
         self.cursor.execute(
             '''INSERT INTO tasks (description, detail) VALUES ('finish proj on wednesday', 'just do it')''')
-        self.conn.commit()
+        self.commit()
 
     def get(self):
         cursor = self.cursor.execute('''SELECT * FROM tasks''')
@@ -30,6 +33,13 @@ class DB:
 
         for row in res:
             print(row)
+
+    def create(self, action):
+        self.cursor.execute(
+            '''INSERT INTO tasks (description, detail, locations, times, people) VALUES (?, ?, ?, ?, ?)''',
+            (action['description'], action['detail'], action['locations'], action['times'], action['people'])
+        )
+        self.commit()
 
 
 db = DB()

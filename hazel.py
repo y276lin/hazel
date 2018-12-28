@@ -4,7 +4,8 @@ from constants import *
 # interpreter = Interpreter.load(MODEL_PATH)
 
 # train new model
-from train import interpreter
+from train import interpreter, extract_entities
+from db import db
 
 print('=-=-=-=-=-=-=')
 print('Model Loaded')
@@ -49,8 +50,26 @@ def take_action(action, msg, state, intent):
         action['description'] = msg
     elif state == CREATE_DETAIL:
         action['detail'] = msg
+        ents = extract_entities(action['description'] + '. ' + action['detail'])
+        print(ents)
+
+        # parse for location
+        locations = [ents['FAC'], ents['ORG'], ents['GPE']]
+        locations = [str(item) for item in locations if item is not None]
+        action['locations'] = ', '.join(locations) if len(locations) > 0 else None
+
+        # parse for time
+        times = [ents['TIME'], ents['DATE']]
+        times = [str(item) for item in times if item is not None]
+        action['times'] = ', '.join(times) if len(times) > 0 else None
+
+        # parse for people
+        action['people'] = str(ents['PERSON']) if 'PERSON' in ents else None
+
+        bot_say(str(action))
     elif state == CREATE_CONFIRM and intent == 'affirm':
         print('save', action)
+        db.create(action)
 
     return action
 
@@ -96,7 +115,8 @@ def send_messages(messages):
 send_messages([
     "Hi",
     "Create new reminder",
-    "This is a description",
-    "here are the details",
+    "Dinner on December 13th with David",
+    # "Dinner tomorrow with David",
+    "3 pm at the Keg in Mississauga",
     'yes',
 ])
