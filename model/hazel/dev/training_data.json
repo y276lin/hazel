@@ -143,11 +143,35 @@
           {
             "start": 16,
             "end": 17,
+            "value": "2",
+            "entity": "index"
+          }
+        ],
+        "text": "show me more on 2"
+      },
+      {
+        "intent": "read_more",
+        "entities": [
+          {
+            "start": 8,
+            "end": 9,
             "value": "3",
             "entity": "index"
           }
         ],
-        "text": "show me more on 3"
+        "text": "more on 3"
+      },
+      {
+        "intent": "delete",
+        "text": "remove 2"
+      },
+      {
+        "intent": "delete",
+        "text": "delete 2"
+      },
+      {
+        "intent": "delete",
+        "text": "mark 2 as done"
       }
     ],
     "regex_features": [],

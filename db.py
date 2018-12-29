@@ -49,6 +49,11 @@ class DB:
         )
         self.commit()
 
+    def delete(self, id):
+        self.cursor.execute('''
+            DELETE FROM tasks WHERE id = ?
+        ''', (str(id)))
+        self.commit()
 
 db = DB()
 
@@ -59,4 +64,5 @@ if 'reset' in sys.argv:
     db.read()
 
 if 'temp' in sys.argv:
-    db.read()
+    tasks = db.read()
+    print(tasks)

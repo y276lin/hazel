@@ -21,6 +21,7 @@ policy_rules = {
     (CREATE_CONFIRM, 'affirm'): (INIT, 'Done'),
     (INIT, 'read_all'): (INIT, None),
     (INIT, 'read_more'): (INIT, None),
+    (INIT, 'delete'): (INIT, None),
 }
 
 debug = True
@@ -90,6 +91,17 @@ def take_action(action, msg, state, intent):
             bot_say(tasks[index - 1])
         else:
             bot_say('Invalid Index. Use [list all] to show all tasks')
+    elif state == INIT and intent == 'delete':
+        tasks = action['tasks']
+        index = int(re.search(r"[1-9][0-9]*", msg).group(0))
+
+        if action['type'] == READ_ACTION and index <= len(tasks):
+            task = tasks[index-1]
+            bot_say(f'Deleting {index}: {task["description"]}')
+            db.delete(task['id'])
+        else:
+            bot_say('Invalid Index. Use [list all] to show all tasks')
+
     elif state == CREATE_CONFIRM and intent == 'affirm':
         print('save', action)
         db.create(action)
@@ -102,6 +114,7 @@ def send_message(state, action, message):
     user_say(message)
 
     intent = interpreter.parse(message)['intent']['name']
+    print(intent)
 
     if intent == 'quit':
         return INIT, {}
@@ -149,5 +162,6 @@ send_messages([
     "show me my notes",
     "more on 2",
     "more details on 3",
-    "1",
+    "remove 1",
+    "show me all notes",
 ])

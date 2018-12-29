@@ -41,4 +41,10 @@
 
 ## intent:read_more
 - more details on [1](index)
-- show me more on [3](index)
+- show me more on [2](index)
+- more on [3](index)
+
+## intent:delete
+- remove 2
+- delete 2
+- mark 2 as done

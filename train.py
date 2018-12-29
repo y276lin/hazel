@@ -21,7 +21,8 @@ print('=-=-=-=-=-=-=-=-=-=')
 print('Model Training Done')
 print('=-=-=-=-=-=-=-=-=-=')
 
-nlp = spacy.load("en_core_web_md")
+nlp = spacy.load("en")
+# nlp = spacy.load("en_core_web_md")
 
 # Define included entities
 include_entities = ['DATE', 'TIME', 'GPE', 'PERSON', 'ORG', 'FAC']
