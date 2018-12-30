@@ -7,6 +7,7 @@ from constants import *
 from train import interpreter, extract_entities
 from db import db
 import re
+import dateparser
 
 print('=-=-=-=-=-=-=')
 print('Model Loaded')
@@ -15,13 +16,15 @@ print('=-=-=-=-=-=-=')
 # Define the policy rules dictionary
 policy_rules = {
     (INIT, "greet"): (INIT, "I'm a bot to remind you"),
+    (INIT, "affirm"): (INIT, "I'm a bot to remind you"),
     (INIT, "create_start"): (CREATE_DESCRIPTION, "Ok, start now. please provide a brief description"),
     (CREATE_DESCRIPTION, None): (CREATE_DETAIL, "Please provide more details"),
     (CREATE_DETAIL, None): (CREATE_CONFIRM, "Double check if everything is correct"),
     (CREATE_CONFIRM, 'affirm'): (INIT, 'Done'),
+    (DELETE_CONFIRM, 'affirm'): (INIT, 'Done'),
     (INIT, 'read_all'): (INIT, None),
     (INIT, 'read_more'): (INIT, None),
-    (INIT, 'delete'): (INIT, None),
+    (INIT, 'delete'): (DELETE_CONFIRM, 'Are you sure you want to delete?'),
 }
 
 debug = True
@@ -38,12 +41,12 @@ def say(role, msg, prefix='', color=None):
 
 def bot_say(msg):
     if msg is not None:
-        say('BOT', msg, prefix=">>", color=bcolors.FAIL)
+        say('BOT', msg, prefix=">>", color=bcolors.OKGREEN)
 
 
 def user_say(msg):
     if msg is not None:
-        say('USER', msg, prefix=">", color=bcolors.OKGREEN)
+        say('USER', msg, prefix=">", color=bcolors.FAIL)
 
 
 def take_action(action, msg, state, intent):
@@ -67,14 +70,17 @@ def take_action(action, msg, state, intent):
         # parse for time
         times = [ents['TIME'], ents['DATE']]
         times = [str(item) for item in times if item is not None]
-        action['times'] = ', '.join(times) if len(times) > 0 else None
+        if len(times) > 0:
+            action_times = ", ".join(times)
+            action['times'] = action_times
+            action['deadline'] = dateparser.parse(action_times)
 
         # parse for people
         action['people'] = str(ents['PERSON']) if 'PERSON' in ents else None
 
         bot_say(str(action))
     elif state == INIT and intent == 'read_all':
-        tasks = db.read()
+        tasks = db.read_all()
         res = '\n'
         for index, task in enumerate(tasks):
             tasks[index]['index'] = index + 1
@@ -92,16 +98,26 @@ def take_action(action, msg, state, intent):
         else:
             bot_say('Invalid Index. Use [list all] to show all tasks')
     elif state == INIT and intent == 'delete':
-        tasks = action['tasks']
         index = int(re.search(r"[1-9][0-9]*", msg).group(0))
+        action['type'] = DELETE_ACTION
+        action['index'] = index
+        tasks = action['tasks']
 
-        if action['type'] == READ_ACTION and index <= len(tasks):
-            task = tasks[index-1]
+        if index <= len(tasks):
+            task = tasks[index - 1]
+            bot_say(task)
+        else:
+            bot_say('Invalid Index. Use [list all] to show all tasks')
+    elif state == DELETE_CONFIRM and intent == 'affirm':
+        tasks = action['tasks']
+        index = action['index']
+
+        if action['type'] == DELETE_ACTION and index <= len(tasks):
+            task = tasks[index - 1]
             bot_say(f'Deleting {index}: {task["description"]}')
             db.delete(task['id'])
         else:
             bot_say('Invalid Index. Use [list all] to show all tasks')
-
     elif state == CREATE_CONFIRM and intent == 'affirm':
         print('save', action)
         db.create(action)
@@ -114,7 +130,7 @@ def send_message(state, action, message):
     user_say(message)
 
     intent = interpreter.parse(message)['intent']['name']
-    print(intent)
+    print(state, intent)
 
     if intent == 'quit':
         return INIT, {}
@@ -148,20 +164,21 @@ def send_messages(messages):
 
 
 # create
-# send_messages([
-#     "Hi",
-#     "Create new reminder",
-#     "Dinner on December 13th with David",
-#     # "Dinner tomorrow with David",
-#     "3 pm at the Keg in Mississauga",
-#     'yes',
-# ])
+send_messages([
+    "Hi",
+    "Create new reminder",
+    "Dinner on December 13th with David",
+    # "Dinner tomorrow with David",
+    "3 pm at the Keg in Mississauga",
+    'yes',
+])
 
 # read
 send_messages([
     "show me my notes",
     "more on 2",
     "more details on 3",
-    "remove 1",
+    "remove 2",
+    "yea",
     "show me all notes",
 ])

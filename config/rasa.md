@@ -10,6 +10,7 @@
 
 ## intent:affirm
 - yes
+- yea
 - yep
 - yeah
 - indeed

@@ -39,6 +39,10 @@
       },
       {
         "intent": "affirm",
+        "text": "yea"
+      },
+      {
+        "intent": "affirm",
         "text": "yep"
       },
       {
