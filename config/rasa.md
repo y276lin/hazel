@@ -44,8 +44,17 @@
 - more details on [1](index)
 - show me more on [2](index)
 - more on [3](index)
+- [4](index)
 
 ## intent:delete
-- remove 2
-- delete 2
-- mark 2 as done
+- delete [1](index)
+- remove [2](index)
+- Remove [3](index)
+- remove
+- mark [4](index) as done
+
+## intent:update
+- update [1](index)
+- change task number [2](index)
+- change the deadline  of task [3](index) to 5pm
+- modify task [4](index)

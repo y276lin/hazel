@@ -29,12 +29,23 @@ include_entities = ['DATE', 'TIME', 'GPE', 'PERSON', 'ORG', 'FAC']
 
 
 # Define extract_entities()
-def extract_entities(message):
-    ents = dict.fromkeys(include_entities)
+def extract_entities(message, given_ents = None):
+    ents = dict.fromkeys(include_entities) if given_ents is None else given_ents
     # Create a spacy document
     doc = nlp(message)
+    print(doc.ents)
     for ent in doc.ents:
         if ent.label_ in ents:
             # Save interesting entities
-            ents[ent.label_] = ent
+            if ent.label_ == 'PERSON':
+                if ent.label_ in ents and ents[ent.label_] is not None:
+                    # append to array
+                    ents[ent.label_].append(ent)
+                else:
+                    # create new array
+                    ents[ent.label_] = [ent]
+            else:
+                ents[ent.label_] = ent
+
+    print(ents)
     return ents

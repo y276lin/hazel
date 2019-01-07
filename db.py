@@ -74,6 +74,32 @@ class DB:
         )
         self.commit()
 
+    def update(self, action):
+        print('updating >>', action)
+        index = action['index']
+        task = action['tasks'][index - 1]
+
+        self.cursor.execute(
+            '''
+                UPDATE tasks
+                SET
+                detail = ?,
+                locations = ?,
+                times = ?,
+                people = ?,
+                deadline = ?
+                WHERE id = ?
+            ''', (
+                task['detail'],
+                task['locations'],
+                task['times'],
+                task['people'],
+                task['deadline'],
+                task['id'],
+        ))
+        # self.cursor.execute('''UPDATE tasks SET description = ? WHERE id = ?''', ("---", task['id']))
+        self.commit()
+
     def delete(self, task_id):
         self.cursor.execute('''
             UPDATE tasks
@@ -82,8 +108,8 @@ class DB:
         ''', (
             datetime.datetime.now(), str(task_id)
         ))
-
         self.commit()
+
 
 db = DB()
 
