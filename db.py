@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import datetime
 
 DB_NAME = 'todo.db'
 conn = sqlite3.connect(DB_NAME)
@@ -27,7 +28,8 @@ class DB:
                 locations string,
                 times string,
                 people string,
-                deadline timestamp
+                deadline timestamp,
+                deleted_at timestamp
             )
             ''')
         self.cursor.execute('''INSERT INTO tasks (description, detail) VALUES ('this is description', 'more...')''')
@@ -36,7 +38,7 @@ class DB:
         self.commit()
 
     def read_all(self):
-        cursor = self.cursor.execute('''SELECT * FROM tasks ORDER BY deadline DESC''')
+        cursor = self.cursor.execute('''SELECT * FROM tasks WHERE deleted_at is NULL ORDER BY deadline DESC''')
         res = cursor.fetchall()
 
         tasks = [{
@@ -74,8 +76,13 @@ class DB:
 
     def delete(self, task_id):
         self.cursor.execute('''
-            DELETE FROM tasks WHERE id = ?
-        ''', (str(task_id)))
+            UPDATE tasks
+            SET deleted_at = ?
+            where id = ?
+        ''', (
+            datetime.datetime.now(), str(task_id)
+        ))
+
         self.commit()
 
 db = DB()
