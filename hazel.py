@@ -8,6 +8,7 @@ from train import interpreter, extract_entities
 from db import db
 import re
 import dateparser
+import random
 
 print('=-=-=-=-=-=-=')
 print('Model Loaded')
@@ -15,18 +16,18 @@ print('=-=-=-=-=-=-=')
 
 # Define the policy rules dictionary
 policy_rules = {
-    (INIT, "greet"): (INIT, "I'm a bot to remind you"),
-    (INIT, "affirm"): (INIT, "I'm a bot to remind you"),
-    (INIT, "create_start"): (CREATE_DESCRIPTION, "Ok, start now. please provide a brief description"),
-    (CREATE_DESCRIPTION, None): (CREATE_DETAIL, "Please provide more details"),
-    (CREATE_DETAIL, None): (CREATE_CONFIRM, "Double check if everything is correct"),
-    (CREATE_CONFIRM, 'affirm'): (INIT, 'Done'),
-    (DELETE_CONFIRM, 'affirm'): (INIT, 'Done'),
+    (INIT, "greet"): (INIT, greeting_msgs),
+    (INIT, "affirm"): (INIT, greeting_msgs),
+    (INIT, "create_start"): (CREATE_DESCRIPTION, create_start_msgs),
+    (CREATE_DESCRIPTION, None): (CREATE_DETAIL, create_detail_msgs),
+    (CREATE_DETAIL, None): (CREATE_CONFIRM, create_confirmation_msgs),
+    (CREATE_CONFIRM, 'affirm'): (INIT, completion_msgs),
+    (DELETE_CONFIRM, 'affirm'): (INIT, completion_msgs),
     (INIT, 'read_all'): (INIT, None),
     (INIT, 'read_more'): (INIT, None),
     (INIT, 'delete'): (DELETE_CONFIRM, 'Are you sure you want to delete?'),
-    (INIT, 'update'): (UPDATE_DETAIL, 'Please say what you want to update.'),
-    (UPDATE_DETAIL, None): (INIT, 'Done'),
+    (INIT, 'update'): (UPDATE_DETAIL, 'Please tell me what you want to update.'),
+    (UPDATE_DETAIL, None): (INIT, completion_msgs),
 }
 
 debug = True
@@ -42,6 +43,10 @@ def say(role, msg, prefix='', color=None):
 
 
 def bot_say(msg):
+    global global_res
+
+    global_res.append(msg)
+
     if msg is not None:
         say('BOT', msg, prefix=">>", color=bcolors.OKGREEN)
 
@@ -50,9 +55,10 @@ def user_say(msg):
     if msg is not None:
         say('USER', msg, prefix=">", color=bcolors.FAIL)
 
+
 def parse_for_entities(task, msg):
     ents = extract_entities(msg)
-    bot_say(ents)
+    print('[ents]: ', ents)
 
     # parse for location
     locations = []
@@ -86,8 +92,22 @@ def parse_for_entities(task, msg):
         people = [str(person) for person in ents['PERSON']]
         task['people'] = ", ".join(people)
 
-    bot_say(task)
+    bot_say(prettify_task(task))
     return task
+
+def prettify_task(task):
+    temp = ""
+    key_arr = ['description', 'detail', 'locations', 'people', 'deadline']
+    name_arr = ['Description', 'Detail', 'Location', 'People', 'Deadline']
+
+    for index, (key, name) in enumerate(zip(key_arr, name_arr)):
+        if key in task and task[key] is not None:
+            if key == 'detail':
+                temp += f"<{name}>:\n {task[key]}\n"
+            else:
+                temp += f"<{name}>: {task[key]}\n"
+
+    return temp
 
 def take_action(action, msg, state, intent):
     if debug is True:
@@ -102,24 +122,26 @@ def take_action(action, msg, state, intent):
 
         msg_to_parse = action['description'] + '. ' + action['detail']
         action = parse_for_entities(action, msg_to_parse)
-
-        bot_say(str(action))
     elif state == INIT and intent == 'read_all':
         tasks = db.read_all()
-        res = '\n'
-        for index, task in enumerate(tasks):
-            tasks[index]['index'] = index + 1
-            res += f"{index + 1}: {task['description']}\n"
+        if len(tasks) == 0:
+            bot_say('You have no tasks. Use <create new> to create a new task.')
+        else:
+            res = ''
+            for index, task in enumerate(tasks):
+                tasks[index]['index'] = index + 1
+                res += f"{index + 1}: {task['description']}\n"
 
-        bot_say(str(res))
-        action['type'] = READ_ACTION
-        action['tasks'] = tasks
+            bot_say(str(res))
+            action['type'] = READ_ACTION
+            action['tasks'] = tasks
     elif state == INIT and intent == "read_more":
         tasks = action['tasks']
         index = int(re.search(r"[1-9][0-9]*", msg).group(0))
 
         if action['type'] == READ_ACTION and index <= len(tasks):
-            bot_say(tasks[index - 1])
+            task = tasks[index - 1]
+            bot_say(prettify_task(task))
         else:
             bot_say('Invalid Index. Use [list all] to show all tasks')
     elif state == INIT and intent == 'delete':
@@ -130,7 +152,7 @@ def take_action(action, msg, state, intent):
 
         if index <= len(tasks):
             task = tasks[index - 1]
-            bot_say(task)
+            bot_say(prettify_task(task))
         else:
             bot_say('Invalid Index. Use [list all] to show all tasks')
     elif state == DELETE_CONFIRM and intent == 'affirm':
@@ -146,6 +168,13 @@ def take_action(action, msg, state, intent):
     elif state == CREATE_CONFIRM and intent == 'affirm':
         print('save', action)
         db.create(action)
+
+        del_key_arr = ['description', 'detail', 'times', 'locations', 'people', 'deadline']
+        for key in del_key_arr:
+            if key in action:
+                del action[key]
+
+        print('db action done')
     elif state == INIT and intent == 'update':
         parsed_index = int(re.search(r"[1-9][0-9]*", msg).group(0))
 
@@ -178,12 +207,15 @@ def take_action(action, msg, state, intent):
 
 # Define send_message()
 def send_message(state, action, message):
+    global global_res
+
     user_say(message)
 
     intent = interpreter.parse(message)['intent']['name']
     print(state, intent)
 
     if intent == 'quit':
+        bot_say(random.choice(goodbye_msgs))
         return INIT, {}
 
     if state in [CREATE_DESCRIPTION, CREATE_DETAIL, UPDATE_DETAIL]:
@@ -192,7 +224,7 @@ def send_message(state, action, message):
     pair = (state, intent)
 
     if pair not in policy_rules:
-        bot_say("Sorry I don't know what to do")
+        bot_say(random.choice(dont_know_what_todo_msgs))
         return state, action
 
     next_state, response = policy_rules[pair]
@@ -201,28 +233,48 @@ def send_message(state, action, message):
     if debug is True:
         print(f"state: {state}, intent: {intent}, next_state: {next_state}")
 
-    bot_say(response)
+    if type(response) == type([]):
+        bot_say(random.choice(response))
+    else:
+        bot_say(response)
+
+    print("r>", global_res)
     return next_state, action
 
 
 # Define send_messages()
+global_state = INIT
+global_action = {}
+global_res = []
+
+
 def send_messages(messages):
-    state = INIT
-    action = {}
+    global global_state
+    global global_action
 
     for msg in messages:
-        state, action = send_message(state, action, msg)
+        global_state, global_action = send_message(global_state, global_action, msg)
+
+
+def wechat_send_message(message):
+    global global_state
+    global global_action
+    global global_res
+    global_res = []
+
+    global_state, global_action = send_message(global_state, global_action, message)
+    return global_res
 
 
 # create
-send_messages([
-    "Hi",
-    "Create new reminder",
-    "Dinner on December 13th with David",
-    # "Dinner tomorrow with David",
-    "3 pm at the Keg in Mississauga",
-    'yes',
-])
+# send_messages([
+#     "Hi",
+#     "Create new reminder",
+#     "Dinner on December 13th with David",
+#     # "Dinner tomorrow with David",
+#     "3 pm at the Keg in Mississauga",
+#     'yes',
+# ])
 
 # read
 # send_messages([
@@ -235,12 +287,12 @@ send_messages([
 # ])
 
 # update
-send_messages([
-    "show me all notes",
-    'more on 1',
-    "update 1",
-    "change the time to 5pm",
-    "update 1",
-    "Bob is also coming",
-    "1",
-])
+# send_messages([
+#     "show me all notes",
+#     'more on 1',
+#     "update 1",
+#     "change the time to 5pm",
+#     "update 1",
+#     "Bob is also coming",
+#     "1",
+# ])

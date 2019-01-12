@@ -3,7 +3,7 @@ import sys
 import datetime
 
 DB_NAME = 'todo.db'
-conn = sqlite3.connect(DB_NAME)
+conn = sqlite3.connect(DB_NAME, check_same_thread=False)
 
 
 class DB:
@@ -32,10 +32,10 @@ class DB:
                 deleted_at timestamp
             )
             ''')
-        self.cursor.execute('''INSERT INTO tasks (description, detail) VALUES ('this is description', 'more...')''')
-        self.cursor.execute(
-            '''INSERT INTO tasks (description, detail) VALUES ('finish proj on wednesday', 'just do it')''')
-        self.commit()
+        # self.cursor.execute('''INSERT INTO tasks (description, detail) VALUES ('this is description', 'more...')''')
+        # self.cursor.execute(
+        #     '''INSERT INTO tasks (description, detail) VALUES ('finish proj on wednesday', 'just do it')''')
+        # self.commit()
 
     def read_all(self):
         cursor = self.cursor.execute('''SELECT * FROM tasks WHERE deleted_at is NULL ORDER BY deadline DESC''')
@@ -54,6 +54,13 @@ class DB:
         return tasks
 
     def create(self, action):
+        description = action['description'] if 'description' in action else None
+        detail = action['detail'] if 'detail' in action else None
+        locations = action['locations'] if 'locations' in action else None
+        times = action['times'] if 'times' in action else None
+        people = action['people'] if 'people' in action else None
+        deadline = action['deadline'] if 'deadline' in action else None
+
         self.cursor.execute(
             '''INSERT INTO tasks (
                 description,
@@ -64,12 +71,12 @@ class DB:
                 deadline)
             VALUES (?, ?, ?, ?, ?, ?)''',
             (
-                action['description'],
-                action['detail'],
-                action['locations'],
-                action['times'],
-                action['people'],
-                action['deadline'],
+                description,
+                detail,
+                locations,
+                times,
+                people,
+                deadline,
             )
         )
         self.commit()

@@ -26,6 +26,7 @@
 - quit
 - stop
 - exit
+- Bye
 
 ## intent:create_start
 - create a task"

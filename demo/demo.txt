@@ -1,0 +1,42 @@
+Hey
+
+Hello
+
+I want to create a new reminder now
+
+Welcome dinner
+
+Tomorrow 5pm at the Keg in Toronto with David.
+
+Ok
+
+
+
+Create another task
+
+Finish the project report
+
+due in 3 days, submit to Prof.Zhang
+
+YES
+
+
+Show me all my tasks 
+
+More about 5
+
+More about 1
+
+I want to modify task 1
+
+Bob is also coming
+
+Show more about 2
+
+Delete 2
+
+Yes, please
+
+List all
+
+bye
