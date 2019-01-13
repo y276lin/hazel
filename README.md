@@ -1,13 +1,20 @@
 # Hazel
 
-Hazel is a chatbot that reminds you to complete your tasks online and keep your days organized.
+:smile_cat:Hazel is a chatbot that reminds you to complete your tasks online and keep your days organized.
+
+**Naming Inspiration**
+
+> I own 2 cats: Hazel & Siri. Since Apple has coined the term Siri, I decided to name my chatbot Hazel.
+
+> Watch out Apple. :apple:
 
 ## Demo
 
 - [Full Demo Video](https://github.com/y276lin/hazel/blob/master/demo/demo.mp4?raw=true)
 
-![Demo GIF](https://github.com/y276lin/hazel/blob/master/demo/demo.gif?raw=true)
-
+<div align="center" width="100%">
+  <img align="center" src="https://github.com/y276lin/hazel/blob/master/demo/demo.gif?raw=true" width="30%"/>
+</div>
 
 
 ## Features
@@ -19,7 +26,7 @@ Hazel is a chatbot that reminds you to complete your tasks online and keep your 
 
 - Rasa, Spacy, Sklearn, SVM
 
-## Conversation Transcript
+## Conversation Transcript - Creation Flow
 
 ```diff
 + Hey
@@ -31,12 +38,13 @@ Hazel is a chatbot that reminds you to complete your tasks online and keep your 
 + video conference
 - tomorrow 4pm, with Chloe
 + <Description>: video conference
-  <Detail>:
-   tomorrow 4pm, with Chloe
-  <People>: Chloe
-  <Deadline>: 2019-01-14 16:00:00
++ <Detail>:
++ tomorrow 4pm, with Chloe
++ <People>: Chloe
++ <Deadline>: 2019-01-14 16:00:00
 + Please confirm the information.
 - yes
 + Good to go!
 ```
+
 
