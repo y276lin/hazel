@@ -13,7 +13,7 @@
 - [Full Demo Video](https://github.com/y276lin/hazel/blob/master/demo/demo.mp4?raw=true)
 
 <div align="center" width="100%">
-  <img align="center" src="https://github.com/y276lin/hazel/blob/master/demo/demo.gif?raw=true" width="30%"/>
+  <img align="center" src="https://github.com/y276lin/hazel/blob/master/demo/demo-3x.gif?raw=true" width="30%"/>
 </div>
 
 
