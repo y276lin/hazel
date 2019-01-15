@@ -22,6 +22,11 @@
 - great choice
 - sounds really good
 
+## intent:negative
+- no
+- nope
+- never mind
+
 ## intent:quit
 - quit
 - stop
@@ -29,12 +34,15 @@
 - Bye
 
 ## intent:create_start
-- create a task"
-- new task"
+- create a task
+- create a new task
+- create new
+- new task
 - make a note for me
 - remind me
 
 ## intent:read_all
+- show me all tasks due tomorrow
 - show me all tasks
 - show me all notes
 - show me my notes

@@ -33,7 +33,7 @@ MessageTypes = {
 
 bot = Bot(cache_path=True)
 
-my_friend = bot.friends().search('无敌可爱小仙女')[0]
+my_friend = bot.friends().search('坚强嘟')[0]
 print(my_friend)
 
 
@@ -56,6 +56,7 @@ def reply_my_friend(msg):
             for res in ress:
                 my_friend.send(res)
         except Exception as e:
+            print(e)
             logging.error(traceback.format_exc())
 
 bot.join()

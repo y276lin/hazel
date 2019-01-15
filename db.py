@@ -37,8 +37,38 @@ class DB:
         #     '''INSERT INTO tasks (description, detail) VALUES ('finish proj on wednesday', 'just do it')''')
         # self.commit()
 
-    def read_all(self):
-        cursor = self.cursor.execute('''SELECT * FROM tasks WHERE deleted_at is NULL ORDER BY deadline DESC''')
+    def read_all(self, deadline=None):
+        query = '''SELECT * FROM tasks WHERE deleted_at is NULL ORDER BY deadline DESC'''
+
+        if deadline == True:
+            query = '''SELECT * FROM tasks WHERE deleted_at is NULL AND deadline is not NULL ORDER BY deadline DESC'''
+        if deadline == False:
+            query = '''SELECT * FROM tasks WHERE deleted_at is NULL AND deadline is NULL ORDER BY deadline DESC'''
+
+        cursor = self.cursor.execute(query)
+        res = cursor.fetchall()
+
+        tasks = [{
+            "id": row[0],
+            "description": row[1],
+            "detail": row[2],
+            "locations": row[3],
+            "times": row[4],
+            "people": row[5],
+            "deadline": row[6],
+        } for row in res]
+
+        return tasks
+    
+    def read(self, day):
+        if day is None:
+            return day
+
+        today = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = today + datetime.timedelta(days=1)
+        cursor = self.cursor.execute(
+            '''SELECT * FROM tasks WHERE deadline is not null AND deadline >= ? and deadline < ?'''
+        , (today, tomorrow))
         res = cursor.fetchall()
 
         tasks = [{
@@ -130,6 +160,9 @@ if 'seed' in sys.argv:
     tasks = db.read_all()
     print(tasks)
 
-if 'temp' in sys.argv:
+if 'all' in sys.argv:
     tasks = db.read_all()
     print(tasks)
+
+if 'temp' in sys.argv:
+    db.read(datetime.datetime.now() - datetime.timedelta(days=5))

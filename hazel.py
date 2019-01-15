@@ -6,9 +6,7 @@ from constants import *
 # train new model
 from train import interpreter, extract_entities
 from db import db
-import re
-import dateparser
-import random
+import dateparser, timeago, re, random, datetime
 
 print('=-=-=-=-=-=-=')
 print('Model Loaded')
@@ -23,6 +21,7 @@ policy_rules = {
     (CREATE_DETAIL, None): (CREATE_CONFIRM, create_confirmation_msgs),
     (CREATE_CONFIRM, 'affirm'): (INIT, completion_msgs),
     (DELETE_CONFIRM, 'affirm'): (INIT, completion_msgs),
+    (READ_BY_DEADLINE_ACTION, None): (INIT, None),
     (INIT, 'read_all'): (INIT, None),
     (INIT, 'read_more'): (INIT, None),
     (INIT, 'delete'): (DELETE_CONFIRM, 'Are you sure you want to delete?'),
@@ -56,7 +55,7 @@ def user_say(msg):
         say('USER', msg, prefix=">", color=bcolors.FAIL)
 
 
-def parse_for_entities(task, msg):
+def parse_for_entities(task, msg, quiet=False):
     ents = extract_entities(msg)
     print('[ents]: ', ents)
 
@@ -92,7 +91,9 @@ def parse_for_entities(task, msg):
         people = [str(person) for person in ents['PERSON']]
         task['people'] = ", ".join(people)
 
-    bot_say(prettify_task(task))
+    if quiet is False:
+        bot_say(prettify_task(task))
+
     return task
 
 def prettify_task(task):
@@ -109,6 +110,20 @@ def prettify_task(task):
 
     return temp
 
+def prettify_tasks_summary(tasks):
+    res = ''
+    now = datetime.datetime.now()
+    for index, task in enumerate(tasks):
+        tasks[index]['index'] = index + 1
+        deadline = task['deadline']
+
+        if deadline is None:
+            res += f"{index + 1}: {task['description']}\n"
+        else:
+            res += f"{index + 1}: {task['description']} [{timeago.format(deadline, now)}]\n"
+
+    return res
+
 def take_action(action, msg, state, intent):
     if debug is True:
         print('action', action, state, intent)
@@ -123,18 +138,43 @@ def take_action(action, msg, state, intent):
         msg_to_parse = action['description'] + '. ' + action['detail']
         action = parse_for_entities(action, msg_to_parse)
     elif state == INIT and intent == 'read_all':
-        tasks = db.read_all()
-        if len(tasks) == 0:
-            bot_say('You have no tasks. Use <create new> to create a new task.')
+        entities = parse_for_entities({}, msg, quiet=True)
+        print(entities)
+
+        deadline = None
+        tasks = []
+
+        if entities is None or 'deadline' not in entities:
+            tasks = db.read_all()
         else:
-            res = ''
-            for index, task in enumerate(tasks):
-                tasks[index]['index'] = index + 1
-                res += f"{index + 1}: {task['description']}\n"
+            deadline = entities['deadline']
+            tasks = db.read(deadline)
+
+        if len(tasks) == 0:
+            if deadline is None:
+                bot_say('You have no tasks. Use <create new> to create a new task.')
+            else:
+                bot_say(f'You have no tasks due {entities["times"]}. Would you like to see your upcoming tasks?')
+                return action, READ_BY_DEADLINE_ACTION
+        else:
+            res = prettify_tasks_summary(tasks)
 
             bot_say(str(res))
             action['type'] = READ_ACTION
             action['tasks'] = tasks
+    elif state == READ_BY_DEADLINE_ACTION and intent == 'affirm':
+        tasks = db.read_all(True)
+
+        if (len(tasks)==0):
+            bot_say('You have no tasks. Use <create new> to create a new task.')
+        else:
+            res = prettify_tasks_summary(tasks)
+
+            bot_say(str(res))
+            action['type'] = READ_ACTION
+            action['tasks'] = tasks
+    elif state == READ_BY_DEADLINE_ACTION and intent != 'affirm':
+        bot_say("I will take that as a [no] 🈲️")
     elif state == INIT and intent == "read_more":
         tasks = action['tasks']
         index = int(re.search(r"[1-9][0-9]*", msg).group(0))
@@ -202,7 +242,7 @@ def take_action(action, msg, state, intent):
         print('after >> ', action)
         db.update(action)
 
-    return action
+    return action, None
 
 
 # Define send_message()
@@ -211,24 +251,30 @@ def send_message(state, action, message):
 
     user_say(message)
 
-    intent = interpreter.parse(message)['intent']['name']
-    print(state, intent)
+    parse_result = interpreter.parse(message)
+    intent = parse_result['intent']['name']
+    confidence = parse_result['intent']['confidence']
+    print(state, intent, confidence)
 
     if intent == 'quit':
         bot_say(random.choice(goodbye_msgs))
         return INIT, {}
 
-    if state in [CREATE_DESCRIPTION, CREATE_DETAIL, UPDATE_DETAIL]:
-        intent = None
-
     pair = (state, intent)
+    skip_intent = False
+    if state in [CREATE_DESCRIPTION, CREATE_DETAIL, UPDATE_DETAIL, READ_BY_DEADLINE_ACTION]:
+        pair = (state, None)
+        skip_intent = True
 
-    if pair not in policy_rules:
+    if skip_intent == False and (pair not in policy_rules or confidence < 0.35):
         bot_say(random.choice(dont_know_what_todo_msgs))
         return state, action
 
     next_state, response = policy_rules[pair]
-    action = take_action(action, message, state, intent)
+    action, proposed_next_state = take_action(action, message, state, intent)
+
+    if proposed_next_state is not None:
+        next_state = proposed_next_state
 
     if debug is True:
         print(f"state: {state}, intent: {intent}, next_state: {next_state}")
