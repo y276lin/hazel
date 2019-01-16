@@ -9,6 +9,7 @@
 - dear sir
 
 ## intent:affirm
+- Yes
 - yes
 - yea
 - yep
@@ -23,6 +24,8 @@
 - sounds really good
 
 ## intent:negative
+- No
+- No
 - no
 - nope
 - never mind

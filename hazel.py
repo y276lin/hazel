@@ -154,7 +154,7 @@ def take_action(action, msg, state, intent):
             if deadline is None:
                 bot_say('You have no tasks. Use <create new> to create a new task.')
             else:
-                bot_say(f'You have no tasks due {entities["times"]}. Would you like to see your upcoming tasks?')
+                bot_say(f'You have no tasks due {entities["times"]}. Would you like to see your upcoming due tasks?')
                 return action, READ_BY_DEADLINE_ACTION
         else:
             res = prettify_tasks_summary(tasks)

@@ -42,11 +42,11 @@ def reply_my_friend(msg):
     if msg.type != MessageTypes['TEXT']:
         return 'Only Text is supported for now'
 
-    if msg.text == 'tingzhi':
+    if msg.text.lower() == 'tingzhi':
         print('>>> Stop requested')
         bot.stop()
         return '-'
-    elif msg.text == 'tuichu':
+    elif msg.text.lower() == 'tuichu':
         print(">>> Log out requested")
         bot.logout()
         return '-'

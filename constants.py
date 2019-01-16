@@ -36,19 +36,19 @@ class bcolors:
 
 # standard messages
 greeting_msgs = [
-    "Hi, I'm a bot to remind you! ",
-    "Hi, I'm Hazel, your personal reminder. Let's start with create or review your notes",
+    "Hi, I'm a bot to remind you! 🤖️",
+    "Hi, I'm Hazel, your personal reminder. 📅 Let's start with create or review your notes",
     "Hello, I'm Hazel. You can create or review your tasks now!",
 ]
 
 completion_msgs = [
-    "Done",
-    "Finished",
+    "Done 🚀",
+    "Finished ✅",
     "Good to go!",
     "Completed",
 ]
 create_start_msgs = [
-    "Ok, start now. please provide a brief description",
+    "Alright, start now. please provide a brief description",
     "Let's get started. May I have a brief description from you?"
 ]
 create_detail_msgs = [
@@ -61,11 +61,13 @@ create_confirmation_msgs = [
 ]
 goodbye_msgs = [
     'Bye, have a good day! 👌',
+    'Okay, see ya 💨'
     'Okay, see you. 🙋'
 ]
 
 dont_know_what_todo_msgs = [
     "Sorry I didn't understand you.",
     "Pardon?",
+    "Excuse me?",
 ]
 
